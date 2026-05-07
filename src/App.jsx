@@ -4,7 +4,7 @@ import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { Activity, Users, Bell, Search, LayoutDashboard, ShieldCheck, ArrowUpRight, Filter } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// --- MOCK DATA BUILT-IN (Fixes the Vercel Error) ---
+// --- MOCK DATA (Merged here to prevent errors) ---
 const INITIAL_PATIENTS = [
   { id: 'VP-101', name: "Suresh Iyengar", age: 62, condition: "Diabetes", risk: "High", adherence: 42, location: "Bangalore", trend: [40, 35, 45, 42], phone: "+91 98450 12345" },
   { id: 'VP-102', name: "Anjali Deshmukh", age: 55, condition: "Hypertension", risk: "Low", adherence: 95, location: "Mumbai", trend: [90, 92, 94, 95], phone: "+91 91234 56789" },
@@ -23,7 +23,7 @@ const CHART_DATA = [
   { name: 'Sun', adherence: 96, engagement: 98 },
 ];
 
-// --- COMPONENTS ---
+// --- UI COMPONENTS ---
 
 const Sidebar = () => {
   const location = useLocation();
@@ -43,7 +43,7 @@ const Sidebar = () => {
       </div>
       <nav className="flex-1 space-y-2">
         {menuItems.map((item) => (
-          <Link key={item.label} to={item.path}>
+          <Link key={item.label} to={item.path} style={{ textDecoration: 'none' }}>
             <div className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all ${location.pathname === item.path ? 'bg-blue-600 text-white shadow-xl shadow-blue-200' : 'text-gray-500 hover:bg-gray-100'}`}>
               {item.icon} <span className="font-bold">{item.label}</span>
             </div>
