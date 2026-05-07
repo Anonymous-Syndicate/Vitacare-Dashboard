@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation, useParams, useNavigate } from 'react-router-dom';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import { Activity, Users, Bell, Search, LayoutDashboard, ShieldCheck, ArrowUpRight, ChevronLeft, Phone, Mail, MapPin, Calendar, Pill, Clock, Info, CheckCircle2 } from 'lucide-react';
+import { Activity, Users, Bell, Search, LayoutDashboard, ShieldCheck, ArrowUpRight, ChevronLeft, Phone, Mail, MapPin, Calendar, Pill, Clock, Info, CheckCircle2, FileText, X, Download, Printer } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // --- MEDICALLY DETAILED DATASET ---
@@ -24,7 +24,20 @@ const PATIENTS = [
       { name: "Atorvastatin", dose: "10mg", route: "Oral", frequency: "1x Daily", timing: "Bedtime", status: "Active" }
     ], 
     lastTest: { type: "HbA1c / Lipid Profile", date: "Apr 15, 2024", result: "8.4%", status: "Critical" }, 
-    vitals: { bp: "145/92 mmHg", sugar: "180 mg/dL", weight: "78.2 kg", heartRate: "82 bpm" } 
+    vitals: { bp: "145/92 mmHg", sugar: "180 mg/dL", weight: "78.2 kg", heartRate: "82 bpm" },
+    report: {
+      labName: "Apollo Diagnostics - MG Road",
+      reference: "REF-992011",
+      parameters: [
+        { name: "Hemoglobin", result: "13.2", unit: "g/dL", range: "13.5 - 17.5", status: "Low" },
+        { name: "WBC Count", result: "7,400", unit: "cells/mcL", range: "4,500 - 11,000", status: "Normal" },
+        { name: "Platelet Count", result: "2,10,000", unit: "cells/mcL", range: "1,50,000 - 4,50,000", status: "Normal" },
+        { name: "HbA1c (Glycated Hemoglobin)", result: "8.4", unit: "%", range: "4.0 - 5.6", status: "Critical" },
+        { name: "Fast Blood Sugar", result: "168", unit: "mg/dL", range: "70 - 100", status: "High" },
+        { name: "Creatinine", result: "1.1", unit: "mg/dL", range: "0.7 - 1.3", status: "Normal" },
+        { name: "ALT (SGPT)", result: "42", unit: "U/L", range: "7 - 56", status: "Normal" },
+      ]
+    }
   },
   { 
     id: 'VP-102', 
@@ -43,38 +56,26 @@ const PATIENTS = [
       { name: "Telmisartan", dose: "40mg", route: "Oral", frequency: "1x Daily", timing: "Night", status: "Active" }
     ], 
     lastTest: { type: "Kidney Function Test", date: "Apr 10, 2024", result: "Creatinine 0.8", status: "Normal" }, 
-    vitals: { bp: "118/76 mmHg", sugar: "105 mg/dL", weight: "62.0 kg", heartRate: "72 bpm" } 
-  },
-  { 
-    id: 'VP-103', 
-    name: "Vikram Malhotra", 
-    age: 68, 
-    gender: "Male", 
-    condition: "COPD / Chronic Bronchitis", 
-    risk: "Medium", 
-    adherence: 78, 
-    location: "Delhi", 
-    phone: "+91 88001 99000", 
-    email: "vikram.m@gmail.com", 
-    lastVisit: "May 04, 2024", 
-    medications: [
-      { name: "Salbutamol (Ventolin)", dose: "100mcg", route: "Inhalation", frequency: "As needed", timing: "During shortness of breath", status: "Active" },
-      { name: "Budesonide", dose: "400mcg", route: "Inhalation (DPI)", frequency: "2x Daily", timing: "Morning and Evening", status: "Active" }
-    ], 
-    lastTest: { type: "Spirometry", date: "Apr 20, 2024", result: "FEV1 65%", status: "Monitor" }, 
-    vitals: { bp: "130/85 mmHg", sugar: "112 mg/dL", weight: "70.5 kg", heartRate: "88 bpm" } 
+    vitals: { bp: "118/76 mmHg", sugar: "105 mg/dL", weight: "62.0 kg", heartRate: "72 bpm" },
+    report: {
+      labName: "Metropolis Healthcare - Bandra",
+      reference: "REF-884122",
+      parameters: [
+        { name: "Hemoglobin", result: "14.1", unit: "g/dL", range: "12.0 - 15.5", status: "Normal" },
+        { name: "Creatinine", result: "0.8", unit: "mg/dL", range: "0.6 - 1.1", status: "Normal" },
+        { name: "Total Cholesterol", result: "185", unit: "mg/dL", range: "< 200", status: "Normal" },
+        { name: "LDL Cholesterol", result: "110", unit: "mg/dL", range: "< 130", status: "Normal" }
+      ]
+    }
   }
 ];
 
-// Add 20 more realistic placeholders for the demo list
-for (let i = 4; i <= 30; i++) {
+// Fill out rest of the 30 patients for the demo
+for (let i = 3; i <= 30; i++) {
   PATIENTS.push({
-    ...PATIENTS[1],
-    id: `VP-1${i}`,
-    name: i % 2 === 0 ? "Priya Verma" : "Rajesh Gupta",
+    ...PATIENTS[1], id: `VP-1${i}`, name: i % 2 === 0 ? "Priya Verma" : "Rajesh Gupta",
     condition: i % 3 === 0 ? "Diabetes" : "Hypertension",
-    risk: i % 5 === 0 ? "High" : "Low",
-    adherence: 50 + (i * 2) % 45,
+    risk: i % 5 === 0 ? "High" : "Low", adherence: 50 + (i * 2) % 45,
   });
 }
 
@@ -82,7 +83,81 @@ const CHART_DATA = [
   { n: 'Mon', a: 65 }, { n: 'Tue', a: 70 }, { n: 'Wed', a: 68 }, { n: 'Thu', a: 85 }, { n: 'Fri', a: 90 }, { n: 'Sat', a: 92 }, { n: 'Sun', a: 94 }
 ];
 
-// --- STYLED COMPONENTS ---
+// --- MODAL COMPONENT ---
+
+const LabReportModal = ({ isOpen, onClose, patient }) => {
+  if (!isOpen || !patient || !patient.report) return null;
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-[#1D1D1F]/40 backdrop-blur-sm" />
+      <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="relative bg-white w-full max-w-3xl max-h-[90vh] overflow-hidden rounded-[28px] shadow-2xl flex flex-col">
+        {/* Modal Header */}
+        <div className="p-8 border-b border-[#F5F5F7] flex justify-between items-start">
+          <div>
+            <h3 className="text-2xl font-semibold tracking-tight">Clinical Diagnostic Report</h3>
+            <p className="text-[#86868B] text-[14px] mt-1">{patient.report.labName} • {patient.report.reference}</p>
+          </div>
+          <button onClick={onClose} className="p-2 bg-[#F5F5F7] rounded-full text-[#86868B] hover:text-[#1D1D1F] transition-colors"><X size={20} /></button>
+        </div>
+
+        {/* Modal Content */}
+        <div className="flex-1 overflow-y-auto p-8 space-y-8">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-[#FBFBFD] p-4 rounded-xl border border-[#F5F5F7]">
+               <p className="text-[11px] font-bold text-[#86868B] uppercase tracking-wider">Patient Name</p>
+               <p className="font-semibold text-[#1D1D1F] mt-1">{patient.name}</p>
+            </div>
+            <div className="bg-[#FBFBFD] p-4 rounded-xl border border-[#F5F5F7]">
+               <p className="text-[11px] font-bold text-[#86868B] uppercase tracking-wider">Report Date</p>
+               <p className="font-semibold text-[#1D1D1F] mt-1">{patient.lastTest.date}</p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <h4 className="text-[13px] font-bold text-[#86868B] uppercase tracking-widest px-1">Biomarker Analysis</h4>
+            <div className="bg-white border border-[#E5E5E5] rounded-[20px] overflow-hidden">
+               <table className="w-full text-left text-[14px]">
+                 <thead className="bg-[#FBFBFD] border-b border-[#E5E5E5] text-[#86868B]">
+                   <tr>
+                     <th className="px-6 py-3 font-medium">Test Parameter</th>
+                     <th className="px-6 py-3 font-medium text-center">Result</th>
+                     <th className="px-6 py-3 font-medium text-right">Reference Range</th>
+                   </tr>
+                 </thead>
+                 <tbody className="divide-y divide-[#F5F5F7]">
+                   {patient.report.parameters.map((p, i) => (
+                     <tr key={i}>
+                       <td className="px-6 py-4 font-medium text-[#1D1D1F]">{p.name}</td>
+                       <td className="px-6 py-4 text-center">
+                         <span className={`font-bold ${p.status === 'Normal' ? 'text-[#34C759]' : 'text-[#FF3B30]'}`}>{p.result}</span>
+                         <span className="text-[12px] text-[#86868B] ml-1">{p.unit}</span>
+                       </td>
+                       <td className="px-6 py-4 text-right text-[#86868B] font-mono text-[13px]">{p.range}</td>
+                     </tr>
+                   ))}
+                 </tbody>
+               </table>
+            </div>
+          </div>
+
+          <div className="bg-[#F5F5F7] p-6 rounded-[20px]">
+             <h5 className="flex items-center gap-2 text-[14px] font-semibold mb-2"><Info size={16} /> Clinical Pathologist Note</h5>
+             <p className="text-[13px] text-[#424245] leading-relaxed">Values for HbA1c and Blood Sugar indicate poor glycemic control over the last 90 days. Recommended immediate review of insulin dosage and lifestyle compliance.</p>
+          </div>
+        </div>
+
+        {/* Modal Footer */}
+        <div className="p-6 bg-[#F5F5F7] border-t border-[#E5E5E5] flex justify-end gap-3">
+           <button className="flex items-center gap-2 px-5 py-2.5 bg-white border border-[#E5E5E5] rounded-full text-[14px] font-medium hover:bg-gray-50 transition-colors"><Printer size={16} /> Print</button>
+           <button className="flex items-center gap-2 px-6 py-2.5 bg-[#1D1D1F] text-white rounded-full text-[14px] font-medium hover:opacity-90 transition-opacity"><Download size={16} /> Download PDF</button>
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
+// --- PAGES ---
 
 const Sidebar = () => {
   const location = useLocation();
@@ -170,113 +245,106 @@ const PatientList = () => {
 const PatientProfile = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [showReport, setShowReport] = useState(false);
   const patient = useMemo(() => PATIENTS.find(p => p.id === id), [id]);
 
   if (!patient) return null;
 
   return (
-    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="max-w-6xl pb-20">
-      <button onClick={() => navigate('/patients')} className="flex items-center gap-2 text-[#007AFF] font-medium text-[15px] mb-8 group">
-        <ChevronLeft size={20} className="group-hover:-translate-x-1 transition-transform" /> All Patients
-      </button>
+    <>
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="max-w-6xl pb-20">
+        <button onClick={() => navigate('/patients')} className="flex items-center gap-2 text-[#007AFF] font-medium text-[15px] mb-8 group">
+          <ChevronLeft size={20} className="group-hover:-translate-x-1 transition-transform" /> All Patients
+        </button>
 
-      <div className="grid grid-cols-12 gap-8">
-        {/* Left Column: Bio Card */}
-        <div className="col-span-4 space-y-6">
-          <div className="bg-white p-8 rounded-[24px] border border-[#E5E5E5] shadow-sm">
-            <div className="w-16 h-16 bg-[#F5F5F7] rounded-full flex items-center justify-center text-[#86868B] text-2xl font-semibold mb-6">
-              {patient.name.charAt(0)}
+        <div className="grid grid-cols-12 gap-8">
+          {/* Left Column Bio remains same */}
+          <div className="col-span-4 space-y-6">
+            <div className="bg-white p-8 rounded-[24px] border border-[#E5E5E5] shadow-sm">
+              <div className="w-16 h-16 bg-[#F5F5F7] rounded-full flex items-center justify-center text-[#86868B] text-2xl font-semibold mb-6">
+                {patient.name.charAt(0)}
+              </div>
+              <h2 className="text-2xl font-semibold tracking-tight text-[#1D1D1F]">{patient.name}</h2>
+              <p className="text-[15px] text-[#86868B] mb-8">{patient.id} • {patient.age}Y • {patient.gender}</p>
+              
+              <div className="space-y-4 text-[14px] text-[#424245]">
+                <div className="flex items-center gap-3"><Phone size={16} className="text-[#86868B]" /> {patient.phone}</div>
+                <div className="flex items-center gap-3"><Mail size={16} className="text-[#86868B]" /> {patient.email}</div>
+                <div className="flex items-center gap-3"><MapPin size={16} className="text-[#86868B]" /> {patient.location}</div>
+                <div className="flex items-center gap-3"><Calendar size={16} className="text-[#86868B]" /> Last Seen {patient.lastVisit}</div>
+              </div>
             </div>
-            <h2 className="text-2xl font-semibold tracking-tight text-[#1D1D1F]">{patient.name}</h2>
-            <p className="text-[15px] text-[#86868B] mb-8">{patient.id} • {patient.age}Y • {patient.gender}</p>
-            
-            <div className="space-y-4 text-[14px] text-[#424245]">
-              <div className="flex items-center gap-3"><Phone size={16} className="text-[#86868B]" /> {patient.phone}</div>
-              <div className="flex items-center gap-3"><Mail size={16} className="text-[#86868B]" /> {patient.email}</div>
-              <div className="flex items-center gap-3"><MapPin size={16} className="text-[#86868B]" /> {patient.location}</div>
-              <div className="flex items-center gap-3"><Calendar size={16} className="text-[#86868B]" /> Last Seen {patient.lastVisit}</div>
+
+            <div className="bg-[#007AFF] p-8 rounded-[24px] text-white">
+              <p className="text-[13px] font-medium opacity-70 mb-2 uppercase tracking-wide">Adherence Score</p>
+              <div className="text-5xl font-semibold tracking-tighter mb-4">{patient.adherence}%</div>
+              <div className="flex items-start gap-2 bg-white/10 p-4 rounded-[12px] text-[13px] leading-relaxed">
+                <Info size={16} className="mt-0.5 shrink-0" />
+                AI Insight: Patient metrics show deviation. Recommend immediate intervention.
+              </div>
             </div>
           </div>
 
-          <div className="bg-[#007AFF] p-8 rounded-[24px] text-white">
-            <p className="text-[13px] font-medium opacity-70 mb-2 uppercase tracking-wide">Adherence Score</p>
-            <div className="text-5xl font-semibold tracking-tighter mb-4">{patient.adherence}%</div>
-            <div className="flex items-start gap-2 bg-white/10 p-4 rounded-[12px] text-[13px] leading-relaxed">
-              <Info size={16} className="mt-0.5 shrink-0" />
-              AI Insight: Increased probability of non-compliance detected. Schedule automated reminder for evening dose.
-            </div>
-          </div>
-        </div>
+          <div className="col-span-8 space-y-6">
+             <div className="grid grid-cols-4 gap-4">
+                <VitalBox label="Blood Pressure" val={patient.vitals.bp} status="Normal" />
+                <VitalBox label="Blood Sugar" val={patient.vitals.sugar} status="Stable" />
+                <VitalBox label="Heart Rate" val={patient.vitals.heartRate} status="Resting" />
+                <VitalBox label="Weight" val={patient.vitals.weight} status="Stable" />
+             </div>
 
-        {/* Right Column: Medical Detail */}
-        <div className="col-span-8 space-y-6">
-          {/* Vitals Grid */}
-          <div className="grid grid-cols-4 gap-4">
-            <VitalBox label="Blood Pressure" val={patient.vitals.bp} status="Normal" />
-            <VitalBox label="Blood Sugar" val={patient.vitals.sugar} status="Stable" />
-            <VitalBox label="Heart Rate" val={patient.vitals.heartRate} status="Resting" />
-            <VitalBox label="Weight" val={patient.vitals.weight} status="Stable" />
-          </div>
-
-          {/* Medications Section */}
-          <div className="bg-white p-8 rounded-[24px] border border-[#E5E5E5] shadow-sm">
-            <div className="flex items-center justify-between mb-8">
-              <h3 className="text-[19px] font-semibold tracking-tight">Prescribed Regimen</h3>
-              <span className="text-[13px] text-[#86868B] bg-[#F5F5F7] px-3 py-1 rounded-full">{patient.medications.length} Active Meds</span>
-            </div>
-            <div className="space-y-4">
-              {patient.medications.map((med, i) => (
-                <div key={i} className="flex items-center justify-between p-5 bg-[#F5F5F7] rounded-[16px] group hover:bg-[#E8E8ED] transition-colors">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 bg-white rounded-[10px] flex items-center justify-center shadow-sm">
-                      <Pill size={18} className="text-[#007AFF]" />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-[15px] text-[#1D1D1F]">{med.name} {med.dose}</p>
-                      <p className="text-[13px] text-[#86868B]">{med.route} • {med.frequency}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="flex items-center gap-1.5 text-[13px] font-medium text-[#424245]">
-                      <Clock size={14} className="text-[#86868B]" /> {med.timing}
-                    </div>
-                  </div>
+             <div className="bg-white p-8 rounded-[24px] border border-[#E5E5E5] shadow-sm">
+                <div className="flex items-center justify-between mb-8">
+                  <h3 className="text-[19px] font-semibold tracking-tight">Prescribed Regimen</h3>
+                  <span className="text-[13px] text-[#86868B] bg-[#F5F5F7] px-3 py-1 rounded-full">{patient.medications.length} Active Meds</span>
                 </div>
-              ))}
-            </div>
-          </div>
+                <div className="space-y-4">
+                  {patient.medications.map((med, i) => (
+                    <div key={i} className="flex items-center justify-between p-5 bg-[#F5F5F7] rounded-[16px]">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 bg-white rounded-[10px] flex items-center justify-center shadow-sm"><Pill size={18} className="text-[#007AFF]" /></div>
+                        <div><p className="font-semibold text-[15px]">{med.name} {med.dose}</p><p className="text-[13px] text-[#86868B]">{med.route} • {med.frequency}</p></div>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-[13px] font-medium text-[#424245]"><Clock size={14} className="text-[#86868B]" /> {med.timing}</div>
+                    </div>
+                  ))}
+                </div>
+             </div>
 
-          {/* Lab Reports Section */}
-          <div className="bg-white p-8 rounded-[24px] border border-[#E5E5E5] shadow-sm">
-             <h3 className="text-[19px] font-semibold tracking-tight mb-8">Recent Laboratory Observations</h3>
-             <div className="flex items-center justify-between p-6 bg-[#1D1D1F] rounded-[20px] text-white shadow-lg">
-                <div className="space-y-1">
-                  <p className="text-[11px] font-semibold opacity-50 uppercase tracking-widest">Diagnostic Panel</p>
-                  <p className="text-[17px] font-medium">{patient.lastTest.type}</p>
+             {/* Laboratory Section with Trigger */}
+             <div className="bg-white p-8 rounded-[24px] border border-[#E5E5E5] shadow-sm">
+                <div className="flex justify-between items-center mb-8">
+                  <h3 className="text-[19px] font-semibold tracking-tight">Recent Laboratory Observations</h3>
+                  <button onClick={() => setShowReport(true)} className="flex items-center gap-2 text-[#007AFF] text-[13px] font-semibold bg-[#007AFF]/5 px-4 py-2 rounded-full hover:bg-[#007AFF]/10 transition-colors">
+                     <FileText size={16} /> View Full Report
+                  </button>
                 </div>
-                <div className="space-y-1">
-                  <p className="text-[11px] font-semibold opacity-50 uppercase tracking-widest">Result</p>
-                  <p className="text-[20px] font-semibold text-blue-400">{patient.lastTest.result}</p>
-                </div>
-                <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full border border-white/20">
-                  <div className={`w-2 h-2 rounded-full ${patient.lastTest.status === 'Normal' ? 'bg-green-400' : 'bg-red-400'}`}></div>
-                  <span className="text-[12px] font-semibold tracking-wide uppercase">{patient.lastTest.status}</span>
+                <div className="flex items-center justify-between p-6 bg-[#1D1D1F] rounded-[20px] text-white shadow-lg">
+                   <div><p className="text-[11px] font-semibold opacity-50 uppercase tracking-widest">Diagnostic Panel</p><p className="text-[17px] font-medium">{patient.lastTest.type}</p></div>
+                   <div><p className="text-[11px] font-semibold opacity-50 uppercase tracking-widest">Result</p><p className="text-[20px] font-semibold text-blue-400">{patient.lastTest.result}</p></div>
+                   <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full border border-white/20">
+                      <div className={`w-2 h-2 rounded-full ${patient.lastTest.status === 'Normal' ? 'bg-green-400' : 'bg-red-400'}`}></div>
+                      <span className="text-[12px] font-semibold uppercase">{patient.lastTest.status}</span>
+                   </div>
                 </div>
              </div>
           </div>
         </div>
-      </div>
-    </motion.div>
+      </motion.div>
+
+      {/* Lab Report Modal Triggered here */}
+      <AnimatePresence>
+        {showReport && <LabReportModal isOpen={showReport} onClose={() => setShowReport(false)} patient={patient} />}
+      </AnimatePresence>
+    </>
   );
 };
 
 const VitalBox = ({ label, val, status }) => (
-  <div className="bg-white p-5 rounded-[20px] border border-[#E5E5E5] shadow-sm hover:border-blue-200 transition-colors">
+  <div className="bg-white p-5 rounded-[20px] border border-[#E5E5E5] shadow-sm">
     <p className="text-[12px] font-medium text-[#86868B] mb-1">{label}</p>
-    <p className="text-[17px] font-semibold text-[#1D1D1F]">{val}</p>
-    <p className="text-[11px] font-medium text-[#34C759] mt-2 flex items-center gap-1">
-      <CheckCircle2 size={12} /> {status}
-    </p>
+    <p className="text-[17px] font-semibold">{val}</p>
+    <p className="text-[11px] font-medium text-[#34C759] mt-2 flex items-center gap-1"><CheckCircle2 size={12} /> {status}</p>
   </div>
 );
 
@@ -301,10 +369,10 @@ export default function App() {
 
 const Overview = () => (
   <div className="max-w-6xl">
-    <div className="flex justify-between items-end mb-10">
+    <div className="flex justify-between items-end mb-10 text-left">
       <div>
         <h2 className="text-[15px] font-semibold text-[#86868B] uppercase tracking-wider mb-1">Morning, Dr. Malhotra</h2>
-        <h3 className="text-4xl font-semibold tracking-tight text-[#1D1D1F]">Health Overview</h3>
+        <h3 className="text-4xl font-semibold tracking-tight">Health Overview</h3>
       </div>
       <div className="bg-white border border-[#E5E5E5] rounded-full px-5 py-2 flex items-center gap-3 shadow-sm">
         <div className="w-2 h-2 bg-[#34C759] rounded-full animate-pulse"></div>
@@ -312,7 +380,7 @@ const Overview = () => (
       </div>
     </div>
     
-    <div className="grid grid-cols-3 gap-6 mb-8">
+    <div className="grid grid-cols-3 gap-6 mb-8 text-left">
       <div className="bg-white p-8 rounded-[24px] border border-[#E5E5E5] shadow-sm">
         <p className="text-[13px] font-medium text-[#86868B] uppercase tracking-wide">Avg Adherence</p>
         <p className="text-4xl font-semibold mt-2 tracking-tight">88.4%</p>
@@ -328,7 +396,7 @@ const Overview = () => (
     </div>
 
     <div className="bg-white p-8 rounded-[32px] border border-[#E5E5E5] shadow-sm">
-       <h3 className="text-[19px] font-semibold mb-8 tracking-tight">Network Adherence Performance</h3>
+       <h3 className="text-[19px] font-semibold mb-8 tracking-tight text-left">Network Adherence Performance</h3>
        <div className="h-[340px]">
           <ResponsiveContainer width="100%" height="100%">
              <AreaChart data={CHART_DATA}>
